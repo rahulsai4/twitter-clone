@@ -47,7 +47,7 @@ const Post = ({ post }) => {
                             to={`/profile/${postOwner.username}`}
                             className="font-bold"
                         >
-                            {postOwner.fullName}
+                            {postOwner.fullname}
                         </Link>
                         <span className="text-gray-700 flex gap-1 text-sm">
                             <Link to={`/profile/${postOwner.username}`}>
@@ -129,7 +129,7 @@ const Post = ({ post }) => {
                                                         <span className="font-bold">
                                                             {
                                                                 comment.user
-                                                                    .fullName
+                                                                    .fullname
                                                             }
                                                         </span>
                                                         <span className="text-gray-700 text-sm">

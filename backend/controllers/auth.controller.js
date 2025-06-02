@@ -95,8 +95,8 @@ export const login = async (req, res) => {
 
 export const logout = async (req, res) => {
     try {
-        res.cookie("jwt", "", {maxAge:0})
-        res.status(200).json({message: "logout successful"})   
+        res.cookie("jwt", "", { maxAge: 0 });
+        res.status(200).json({ message: "logout successful" });
     } catch (error) {
         console.log("error in logout controller: " + error.message);
         res.status(500).json({ error: "Internal server error" });
@@ -106,9 +106,9 @@ export const logout = async (req, res) => {
 export const getMe = async (req, res) => {
     try {
         const user = await User.findById(req.user._id).select("-password");
-        res.status(200).json(user)
+        res.status(200).json(user);
     } catch (error) {
         console.log("error in get me controller: " + error.message);
         res.status(500).json({ error: "Internal server error" });
     }
-}
+};
