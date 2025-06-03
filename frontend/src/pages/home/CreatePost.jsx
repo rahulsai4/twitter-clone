@@ -12,11 +12,16 @@ const CreatePost = () => {
     const [img, setImg] = useState(null);
     const imgRef = useRef(null);
 
-    const {authUser} = useAuthUser();
+    const { authUser } = useAuthUser();
     const queryClient = useQueryClient();
 
-    const {mutate: createPost, isPending, isError, error} = useMutation({
-        mutationFn: async({text, img}) => {
+    const {
+        mutate: createPost,
+        isPending,
+        isError,
+        error,
+    } = useMutation({
+        mutationFn: async ({ text, img }) => {
             try {
                 const res = await fetch("/api/posts/create", {
                     method: "POST",
@@ -32,21 +37,21 @@ const CreatePost = () => {
                 if (!res.ok || data.error) throw new Error(data.error);
                 return data;
             } catch (error) {
-                console.log(error.message);
-                
+                toast.error(error.message || "Failed to create post");
+                throw error;
             }
         },
         onSuccess: () => {
             setText("");
             setImg(null);
             imgRef.current.value = null;
-            queryClient.invalidateQueries({queryKey: ["posts"]});
+            queryClient.invalidateQueries({ queryKey: ["posts"] });
             toast.success("Post created successfully");
         },
-    })
+    });
     const handleSubmit = (e) => {
         e.preventDefault();
-        createPost({text, img})
+        createPost({ text, img });
     };
 
     const handleImgChange = (e) => {
@@ -64,7 +69,9 @@ const CreatePost = () => {
         <div className="flex p-4 items-start gap-4 border-b border-gray-700">
             <div className="avatar">
                 <div className="w-8 rounded-full">
-                    <img src={authUser.profileImg || "/avatar-placeholder.png"} />
+                    <img
+                        src={authUser.profileImg || "/avatar-placeholder.png"}
+                    />
                 </div>
             </div>
             <form
@@ -114,9 +121,7 @@ const CreatePost = () => {
                         {isPending ? "Posting..." : "Post"}
                     </button>
                 </div>
-                {isError && (
-                    <div className="text-red-500">{error.message}</div>
-                )}
+                {isError && <div className="text-red-500">{error.message}</div>}
             </form>
         </div>
     );

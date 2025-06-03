@@ -1,6 +1,8 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useUpdateProfile } from "../../hooks/useUpdateProfile.jsx";
+import LoadingSpinner from "../../components/common/LoadingSpinner.jsx";
 
-const EditProfileModal = () => {
+const EditProfileModal = ({authUser}) => {
     const [formData, setFormData] = useState({
         fullname: "",
         username: "",
@@ -14,6 +16,22 @@ const EditProfileModal = () => {
     const handleInputChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
     };
+
+    const {updateProfile, isUpdatingProfile} = useUpdateProfile();
+
+    useEffect(() => {   
+        if(authUser) {
+            setFormData({
+                fullname: authUser.fullname || "",
+                username: authUser.username || "",
+                email: authUser.email || "",
+                bio: authUser.bio || "",
+                link: authUser.link || "",
+                newPassword: "",
+                currentPassword: "",
+            });
+        }
+    }, [authUser])
 
     return (
         <>
@@ -32,7 +50,7 @@ const EditProfileModal = () => {
                         className="flex flex-col gap-4"
                         onSubmit={(e) => {
                             e.preventDefault();
-                            alert("Profile updated successfully");
+                            updateProfile(formData);
                         }}
                     >
                         <div className="flex flex-wrap gap-2">
@@ -96,8 +114,14 @@ const EditProfileModal = () => {
                             name="link"
                             onChange={handleInputChange}
                         />
-                        <button className="btn btn-primary rounded-full btn-sm text-white">
-                            Update
+                        <button
+                            className="btn btn-primary rounded-full btn-sm text-white"
+                        >
+                            {isUpdatingProfile ? (
+                                <LoadingSpinner size="sm" />
+                            ) : (
+                                "Update"
+                            )}
                         </button>
                     </form>
                 </div>

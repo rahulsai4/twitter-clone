@@ -11,10 +11,17 @@ import { FaArrowLeft } from "react-icons/fa6";
 import { IoCalendarOutline } from "react-icons/io5";
 import { FaLink } from "react-icons/fa";
 import { MdEdit } from "react-icons/md";
-import { useQuery } from "@tanstack/react-query";
+import { QueryClient, useMutation, useQuery } from "@tanstack/react-query";
 import { formatMemberSinceDate } from "../../utils/date.js";
+import { useAuthUser } from "../../hooks/useAuthUser.jsx";
+import { useFollow } from "../../hooks/useFollow.jsx";
+import LoadingSpinner from "../../components/common/LoadingSpinner.jsx";
+import toast from "react-hot-toast";
+import { useUpdateProfile } from "../../hooks/useUpdateProfile.jsx";
 
 const ProfilePage = () => {
+    const queryClient = new QueryClient();
+    const { authUser } = useAuthUser();
     const [coverImg, setCoverImg] = useState(null);
     const [profileImg, setProfileImg] = useState(null);
     const [feedType, setFeedType] = useState("posts");
@@ -23,6 +30,8 @@ const ProfilePage = () => {
     const profileImgRef = useRef(null);
 
     const { username } = useParams();
+
+    const { follow, isPending } = useFollow();
 
     const {
         data: user,
@@ -41,12 +50,13 @@ const ProfilePage = () => {
                     );
                 }
                 return data;
-                
             } catch (error) {
                 throw new Error(error.message);
             }
         },
     });
+
+    const {updateProfile, isUpdatingProfile} = useUpdateProfile({coverImg, profileImg});
 
     const handleImgChange = (e, state) => {
         const file = e.target.files[0];
@@ -60,8 +70,9 @@ const ProfilePage = () => {
         }
     };
 
-    const isMyProfile = true;
+    const isMyProfile = authUser._id == user?._id;
     const memberSinceDate = formatMemberSinceDate(user?.createdAt);
+    const amIFollowing = authUser?.following.includes(user?._id);
 
     useEffect(() => {
         refetch();
@@ -153,27 +164,29 @@ const ProfilePage = () => {
                                 </div>
                             </div>
                             <div className="flex justify-end px-4 mt-5">
-                                {isMyProfile && <EditProfileModal />}
+                                {isMyProfile && <EditProfileModal authUser={authUser}/>}
                                 {!isMyProfile && (
                                     <button
                                         className="btn btn-outline rounded-full btn-sm"
-                                        onClick={() =>
-                                            alert("Followed successfully")
-                                        }
+                                        onClick={() => follow(user?._id)}
                                     >
-                                        Follow
+                                        {isPending && (
+                                            <LoadingSpinner size="sm" />
+                                        )}
+                                        {!isPending &&
+                                            !amIFollowing &&
+                                            "Follow"}
+                                        {!isPending &&
+                                            amIFollowing &&
+                                            "Unfollow"}
                                     </button>
                                 )}
                                 {(coverImg || profileImg) && (
                                     <button
                                         className="btn btn-primary rounded-full btn-sm text-white px-4 ml-2"
-                                        onClick={() =>
-                                            alert(
-                                                "Profile updated successfully"
-                                            )
-                                        }
+                                        onClick={() => updateProfile({ coverImg, profileImg })}
                                     >
-                                        Update
+                                        { isUpdatingProfile ? <LoadingSpinner size="sm"/> : "Update"}
                                     </button>
                                 )}
                             </div>
