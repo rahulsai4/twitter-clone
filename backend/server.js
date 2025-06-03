@@ -1,5 +1,6 @@
 import express from "express";
 import dotenv from "dotenv";
+dotenv.config();
 import { v2 as cloudinary } from "cloudinary";
 import cookieParser from "cookie-parser";
 import authRoutes from "./routes/auth.route.js";
@@ -7,6 +8,8 @@ import userRoutes from "./routes/user.route.js";
 import postRoutes from "./routes/post.route.js";
 import { connectDB } from "./db/connectDB.js";
 import notificationRoutes from "./routes/notification.route.js";
+
+
 
 cloudinary.config({
     cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
@@ -16,7 +19,7 @@ cloudinary.config({
 
 dotenv.config();
 const app = express();
-app.use(express.json());
+app.use(express.json({limit: "5mb"}));
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
