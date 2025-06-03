@@ -12,31 +12,11 @@ import NotificationPage from "./pages/notification/NotificationPage.jsx";
 import ProfilePage from "./pages/profile/ProfilePage.jsx";
 import { useQuery } from "@tanstack/react-query";
 import LoadingSpinner from "./components/common/LoadingSpinner.jsx";
+import { useAuthUser } from "./hooks/useAuthUser.jsx";
 
 const App = () => {
-    const {
-        data: authUser,
-        isLoading,
-        error,
-        isError,
-    } = useQuery({
-        queryKey: ["authUser"],
-        queryFn: async () => {
-            try {
-                const res = await fetch("/api/auth/me");
-                const data = await res.json();
-                if(data.error) return null;
-                if (!res.ok || data.error) {
-                    throw new Error(data.error || "Something went wrong");
-                }
-                console.log(data);
-                return data;
-            } catch (error) {
-                throw new Error(error);
-            }
-        },
-        retry: false,
-    });
+    const {authUser, isLoading} = useAuthUser();
+    
     if (isLoading) {
         return (
             <div className="h-screen flex  justify-center items-center">

@@ -41,7 +41,24 @@ const Sidebar = () => {
         },
     });
 
-    const {data:authUser} = useQuery({queryKey: ["authUser"]});
+    const { data: authUser } = useQuery({
+        queryKey: ["authUser"],
+        queryFn: async () => {
+            try {
+                const res = await fetch("/api/auth/me");
+                const data = await res.json();
+                if (data.error) return null;
+                if (!res.ok || data.error) {
+                    throw new Error(data.error || "Something went wrong");
+                }
+                console.log(data);
+                return data;
+            } catch (error) {
+                throw new Error(error);
+            }
+        },
+        retry: false,
+    });
 
     return (
         <div className="md:flex-[2_2_0] w-18 max-w-52">

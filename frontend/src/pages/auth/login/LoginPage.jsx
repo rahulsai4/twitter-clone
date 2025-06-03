@@ -7,12 +7,14 @@ import { MdOutlineMail } from "react-icons/md";
 import { MdPassword } from "react-icons/md";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
+import { useAuthUser } from "../../../hooks/useAuthUser.jsx";
 
 const LoginPage = () => {
     const [formData, setFormData] = useState({
         username: "",
         password: "",
     });
+    const {authUser, isLoading, invalidateAuthUser} = useAuthUser();
     const queryClient = useQueryClient();
     const {
         mutate: loginMutation,
@@ -44,7 +46,7 @@ const LoginPage = () => {
         onSuccess: () => {
             toast.success("Logged In Successfully");
             // refetch the authUser
-            queryClient.invalidateQueries({ queryKey: ["authUser"] });
+            invalidateAuthUser();
         },
     });
 
