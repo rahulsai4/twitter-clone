@@ -10,6 +10,7 @@ import { toast } from "react-hot-toast";
 import { useMutation } from "@tanstack/react-query";
 import LoadingSpinner from "./LoadingSpinner.jsx";
 import { useAuthUser } from "../../hooks/useAuthUser.jsx";
+import { formatPostDate } from "../../utils/date.js";
 
 const Post = ({ post }) => {
     const [comment, setComment] = useState("");
@@ -68,15 +69,48 @@ const Post = ({ post }) => {
             toast.error(error.message);
         },
     });
+    const {mutate: commentPost, isPending: isCommenting} = useMutation({
+        mutationFn: async () => {
+            try {
+                const res = await fetch(`/api/posts/comment/${post._id}`, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({ text: comment }),
+                });
+                const data = await res.json();
+                if (!res.ok || data.error) {
+                    throw new Error(data.error || "Failed to comment on post");
+                }
+                return data;
+                
+            } catch (error) {
+                throw new Error("Failed to comment on post: " + error.message);
+            }
+        }
+        ,
+        onSuccess: (updatedPost) => {
+            toast.success("Comment posted successfully");
+            queryClient.setQueryData(["posts"], (oldData) => {
+                return oldData.map((p) => {
+                    if (p._id === post._id) {
+                        return updatedPost;
+                    }
+                    return p;
+                });
+            });
+            setComment("");
+        },
+        onError: (error) => {
+            toast.error(error.message);
+        },
+    })
 
     const postOwner = post.user;
     const isLiked = post.likes.includes(authUser._id);
-
     const isMyPost = authUser._id === post.user._id;
-
-    const formattedDate = "1h";
-
-    const isCommenting = false;
+    const formattedDate = formatPostDate(post.createdAt);
 
     const handleDeletePost = () => {
         deletePost();
@@ -84,6 +118,8 @@ const Post = ({ post }) => {
 
     const handlePostComment = (e) => {
         e.preventDefault();
+        if(isCommenting) return;
+        commentPost();
     };
 
     const handleLikePost = () => {
